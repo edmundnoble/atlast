@@ -4,7 +4,7 @@ import org.scalajs.sbtplugin.{AbstractJSDep, ScalaJSPlugin}
 import sbt.Keys._
 import sbt._
 import sbt.complete.Parser
-import scoverage.ScoverageKeys.coverageExcludedPackages
+//import scoverage.ScoverageKeys.coverageExcludedPackages
 
 object Dependencies {
 

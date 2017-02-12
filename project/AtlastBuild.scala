@@ -4,14 +4,14 @@ import org.scalajs.sbtplugin.{AbstractJSDep, ScalaJSPlugin}
 import sbt.Keys._
 import sbt._
 import sbt.complete.Parser
-import scoverage.ScoverageKeys.coverageExcludedPackages
+//import scoverage.ScoverageKeys.coverageExcludedPackages
 
 object AtlastBuild {
 
 val baseSettings = Seq(
     version := "0.0.1",
     scalaVersion := "2.12.1",
-    scalaOrganization := "org.typelevel",
+//    scalaOrganization := "org.typelevel",
     updateOptions ~= (_.withCachedResolution(true)),
     scalacOptions ++= Seq(
       "-encoding", "UTF-8",
@@ -29,8 +29,10 @@ val baseSettings = Seq(
       "-Ywarn-inaccessible",
       "-Ywarn-infer-any",
       "-Ywarn-nullary-override",
+//      "-Yinduction-heuristics",
+//      "-Xlint:strict-unsealed-patmat",
       "-Ypartial-unification",
-      "-Yliteral-types",
+//      "-Yliteral-types",
       "-Ywarn-nullary-unit",
       "-Xfuture"
     ),
