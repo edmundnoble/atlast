@@ -21,6 +21,7 @@ val baseSettings = Seq(
       "-feature",
       "-language:implicitConversions",
       "-language:higherKinds",
+      "-language:existentials",
       "-unchecked",
       "-Xfatal-warnings",
       "-Yno-adapted-args",
