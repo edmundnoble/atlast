@@ -1,8 +1,9 @@
 package atlast
 
-import cats.Monad
+import cats.implicits._
+import cats.{Monad, ~>}
 
-//import scala.annotation.inductive
+import scala.annotation.inductive
 
 object Test {
 
@@ -19,11 +20,12 @@ object Test {
 
   final case class Three[T[_[_]], U[_[_]], V[_[_]]]() extends EffStack
 
-  final case class AppendL[L <: EffStack, R <: EffStack]() extends EffStack
+  final case class AppendL[L, R]() extends EffStack
 
-  final case class AppendR[L <: EffStack, R <: EffStack]() extends EffStack
+  final case class AppendR[L, R]() extends EffStack
 
-  final case class Size[Effs <: EffStack](size: Int) extends AnyVal
+  @inductive
+  final case class Size[Effs](size: Int) extends AnyVal
 
   object Size {
     private val sizeZeroUnsafe: Size[EffStack] = Size(0)
@@ -38,41 +40,41 @@ object Test {
       sizeTwoUnsafe.asInstanceOf[Size[Two[T, U]]]
     implicit def sizeThree[T[_[_]], U[_[_]], V[_[_]]]: Size[Three[T, U, V]] =
       sizeThreeUnsafe.asInstanceOf[Size[Three[T, U, V]]]
-    implicit def sizeAppendL[L <: EffStack, R <: EffStack](implicit R: Size[R], L: Size[L]): Size[AppendL[L, R]] =
+    implicit def sizeAppendL[L, R](implicit R: Size[R], L: Size[L]): Size[AppendL[L, R]] =
       Size(R.size + L.size)
-    implicit def sizeAppendR[L <: EffStack, R <: EffStack](implicit R: Size[R]): Size[AppendR[L, R]] =
+    implicit def sizeAppendR[L, R](implicit R: Size[R]): Size[AppendR[L, R]] =
       R.asInstanceOf[Size[AppendR[L, R]]]
   }
 
-  //  @inductive
-  final case class Extract[T[_[_]], Effs <: EffStack](index: Int) extends AnyVal {
+  @inductive
+  final case class <=[T[_[_]], Effs](index: Int) extends AnyVal {
     def extract[F[_]](effs: AppliedEffStack[F]): T[F] =
       effs.coll(index).asInstanceOf[T[F]]
   }
 
-  object Extract {
-    private val extractZeroUnsafe: Extract[Nothing, EffStack] =
-      Extract[Nothing, EffStack](0)
-    private val extractOneUnsafe: Extract[Nothing, EffStack] =
-      Extract[Nothing, EffStack](1)
-    private val extractTwoUnsafe: Extract[Nothing, EffStack] =
-      Extract[Nothing, EffStack](2)
-    implicit def extractOne[T[_[_]]]: Extract[T, One[T]] =
-      extractZeroUnsafe.asInstanceOf[Extract[T, One[T]]]
-    implicit def extractTwoL[T[_[_]], U[_[_]]]: Extract[T, Two[T, U]] =
-      extractOneUnsafe.asInstanceOf[Extract[T, Two[T, U]]]
-    implicit def extractTwoR[T[_[_]], U[_[_]]]: Extract[U, Two[T, U]] =
-      extractZeroUnsafe.asInstanceOf[Extract[U, Two[T, U]]]
-    implicit def extractThreeL[T[_[_]], U[_[_]], V[_[_]]]: Extract[T, Three[T, U, V]] =
-      extractTwoUnsafe.asInstanceOf[Extract[T, Three[T, U, V]]]
-    implicit def extractThreeM[T[_[_]], U[_[_]], V[_[_]]]: Extract[U, Three[T, U, V]] =
-      extractOneUnsafe.asInstanceOf[Extract[U, Three[T, U, V]]]
-    implicit def extractThreeR[T[_[_]], U[_[_]], V[_[_]]]: Extract[V, Three[T, U, V]] =
-      extractZeroUnsafe.asInstanceOf[Extract[V, Three[T, U, V]]]
-    implicit def extractAppendL[T[_[_]], L <: EffStack, R <: EffStack](implicit L: Extract[T, L], R: Size[R]): Extract[T, AppendL[L, R]] =
-      Extract(L.index + R.size)
-    implicit def extractAppendR[T[_[_]], L <: EffStack, R <: EffStack](implicit R: Extract[T, L]): Extract[T, AppendR[L, R]] =
-      R.asInstanceOf[Extract[T, AppendR[L, R]]]
+  object <= {
+    private val extractZeroUnsafe: <=[Nothing, EffStack] =
+      <=[Nothing, EffStack](0)
+    private val extractOneUnsafe: <=[Nothing, EffStack] =
+      <=[Nothing, EffStack](1)
+    private val extractTwoUnsafe: <=[Nothing, EffStack] =
+      <=[Nothing, EffStack](2)
+    implicit def extractOne[T[_[_]]]: <=[T, One[T]] =
+      extractZeroUnsafe.asInstanceOf[<=[T, One[T]]]
+    implicit def extractTwoL[T[_[_]], U[_[_]]]: <=[T, Two[T, U]] =
+      extractOneUnsafe.asInstanceOf[<=[T, Two[T, U]]]
+    implicit def extractTwoR[T[_[_]], U[_[_]]]: <=[U, Two[T, U]] =
+      extractZeroUnsafe.asInstanceOf[<=[U, Two[T, U]]]
+    implicit def extractThreeL[T[_[_]], U[_[_]], V[_[_]]]: <=[T, Three[T, U, V]] =
+      extractTwoUnsafe.asInstanceOf[<=[T, Three[T, U, V]]]
+    implicit def extractThreeM[T[_[_]], U[_[_]], V[_[_]]]: <=[U, Three[T, U, V]] =
+      extractOneUnsafe.asInstanceOf[<=[U, Three[T, U, V]]]
+    implicit def extractThreeR[T[_[_]], U[_[_]], V[_[_]]]: <=[V, Three[T, U, V]] =
+      extractZeroUnsafe.asInstanceOf[<=[V, Three[T, U, V]]]
+    implicit def extractAppendL[T[_[_]], L, R](implicit L: <=[T, L], R: Size[R]): <=[T, AppendL[L, R]] =
+      <=(L.index + R.size)
+    implicit def extractAppendR[T[_[_]], L, R](implicit R: <=[T, L]): <=[T, AppendR[L, R]] =
+      R.asInstanceOf[<=[T, AppendR[L, R]]]
   }
 
   type MyEffs = Two[Storage, LsStorage]
@@ -86,22 +88,22 @@ object Test {
   }
 
   object Storage {
-    def get[Effs <: EffStack](key: String)(implicit ev: Extract[Storage, Effs]): ATM[Effs, Option[String]] =
+    def get[Effs](key: String)(implicit ev: <=[Storage, Effs]): ATM[Effs, Option[String]] =
       new ATM[Effs, Option[String]] {
         override def apply[F[_] : Monad](tf: AppliedEffStack[F]): F[Option[String]] = ev.extract(tf).get(key)
       }
-    def put[Effs <: EffStack](key: String, data: String)(implicit ev: Extract[Storage, Effs]): ATM[Effs, Unit] =
+    def put[Effs](key: String, data: String)(implicit ev: <=[Storage, Effs]): ATM[Effs, Unit] =
       new ATM[Effs, Unit] {
         override def apply[F[_] : Monad](tf: AppliedEffStack[F]): F[Unit] = ev.extract(tf).put(key, data)
       }
-    def remove[Effs <: EffStack](key: String)(implicit ev: Extract[Storage, Effs]): ATM[Effs, Unit] =
+    def remove[Effs](key: String)(implicit ev: <=[Storage, Effs]): ATM[Effs, Unit] =
       new ATM[Effs, Unit] {
         override def apply[F[_] : Monad](tf: AppliedEffStack[F]): F[Unit] = ev.extract(tf).remove(key)
       }
   }
 
   object LsStorage {
-    def lsKeys[Effs <: EffStack](implicit ev: Extract[LsStorage, Effs]): ATM[Effs, Iterator[String]] =
+    def lsKeys[Effs](implicit ev: <=[LsStorage, Effs]): ATM[Effs, Iterator[String]] =
       new ATM[Effs, Iterator[String]] {
         override def apply[F[_] : Monad](tf: AppliedEffStack[F]): F[Iterator[String]] = ev.extract(tf).lsKeys
       }
@@ -112,15 +114,21 @@ object Test {
     def lsKeys: F[Iterator[String]]
   }
 
-  trait ATL[C[_[_]], Effs <: EffStack, A] {
+  trait ATL[C[_[_]], Effs, A] {
     def apply[F[_] : C](tf: AppliedEffStack[F]): F[A]
   }
 
-  type ATM[Effs <: EffStack, A] = ATL[Monad, Effs, A]
+  type ATM[Effs, A] = ATL[Monad, Effs, A]
 
   object ATL {
-    type Curried[Effs <: EffStack] = {type l[A] = ATM[Effs, A]}
-    implicit def effStackMonad[Effs <: EffStack]: Monad[Curried[Effs]#l] =
+    type Curried[Effs] = {type l[A] = ATM[Effs, A]}
+    def from[T[_], Effs: <=[T ~> ?[_], ?], A](ta: T[A]): ATM[Effs, A] =
+      new ATM[Effs, A] {
+        override def apply[F[_] : Monad](tf: AppliedEffStack[F]): F[A] =
+          implicitly[<=[T ~> ?[_], Effs]].extract(tf)(ta)
+      }
+
+    implicit def effStackMonad[Effs]: Monad[Curried[Effs]#l] =
       effStackMonadUnsafe.asInstanceOf[Monad[Curried[Effs]#l]]
 
     val effStackMonadUnsafe: Monad[Curried[EffStack]#l] = new Monad[Curried[EffStack]#l] {
@@ -134,6 +142,19 @@ object Test {
         override def apply[F[_]](tf: AppliedEffStack[F])(implicit F: Monad[F]): F[B] = F.tailRecM(a)(f(_)(tf))
       }
     }
+  }
+
+  object Usage {
+
+    def getAndRemove[R
+    : Storage <= ?
+    : LsStorage <= ?
+    : (Either[String, ?] ~> ?[_]) <= ?
+    ](key: String): ATM[R, Option[String]] = for {
+      out <- Storage.get(key)
+      _ <- Storage.remove(key)
+      _ <- ATL.from(Either.left[String, Any]("hello"))
+    } yield out
   }
 
 }

@@ -11,12 +11,10 @@ object AtlastBuild {
 val baseSettings = Seq(
     version := "0.0.1",
     scalaVersion := "2.12.1",
-//    scalaOrganization := "org.typelevel",
-    updateOptions ~= (_.withCachedResolution(true)),
+    scalaOrganization := "org.typelevel",
     scalacOptions ++= Seq(
       "-encoding", "UTF-8",
       "-Xlint",
-      "-Xexperimental",
       "-deprecation",
       "-feature",
       "-language:implicitConversions",
@@ -30,10 +28,9 @@ val baseSettings = Seq(
       "-Ywarn-inaccessible",
       "-Ywarn-infer-any",
       "-Ywarn-nullary-override",
-//      "-Yinduction-heuristics",
-//      "-Xlint:strict-unsealed-patmat",
+      "-Yinduction-heuristics",
       "-Ypartial-unification",
-//      "-Yliteral-types",
+      "-Yliteral-types",
       "-Ywarn-nullary-unit",
       "-Xfuture"
     ),
@@ -61,7 +58,7 @@ val baseSettings = Seq(
     .settings(baseSettings: _*)
     .jsSettings(ScalaJSPlugin.projectSettings: _*)
     .settings(Dependencies.cats: _*)
-    .settings(Dependencies.scalatest: _*)
+//    .settings(Dependencies.scalatest: _*)
 
   lazy val coreJVM = core.jvm
   lazy val coreJS = core.js
