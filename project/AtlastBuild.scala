@@ -58,7 +58,7 @@ val baseSettings = Seq(
     .settings(baseSettings: _*)
     .jsSettings(ScalaJSPlugin.projectSettings: _*)
     .settings(Dependencies.cats: _*)
-//    .settings(Dependencies.scalatest: _*)
+    .settings(Dependencies.scalatest: _*)
 
   lazy val coreJVM = core.jvm
   lazy val coreJS = core.js
