@@ -54,17 +54,13 @@ val baseSettings = Seq(
     testOnly in Test := emptyInputTask.inputTaskValue
   )
 
-  lazy val core: CrossProject =  crossProject.in(file("core"))
+  lazy val core: Project =  project.in(file("core"))
     .settings(baseSettings: _*)
-    .jsSettings(ScalaJSPlugin.projectSettings: _*)
     .settings(Dependencies.cats: _*)
     .settings(Dependencies.scalatest: _*)
 
-  lazy val coreJVM = core.jvm
-  lazy val coreJS = core.js
-
   lazy val atlast: Project = project.in(file("."))
-    .aggregate(coreJVM, coreJS)
+    .aggregate(core)
     .settings(Defaults.projectCore)
     .settings(baseSettings: _*)
     .settings(disableTests: _*)
