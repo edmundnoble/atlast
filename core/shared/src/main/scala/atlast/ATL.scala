@@ -13,7 +13,7 @@ import cats.{Monad, ~>}
     def three[T[_[_]], U[_[_]], V[_[_]], F[_]](tf: T[F], uf: U[F], vf: V[F]): InterpretersTo[F, Fx.Three[T, U, V]] =
       InterpretersTo[F, Fx.Three[T, U, V]](Vector[X[F] forSome {type X[_[_]]}](vf, uf, tf))
     def append[L, R, F[_]](le: InterpretersTo[F, L], re: InterpretersTo[F, R]): InterpretersTo[F, Fx.Append[L, R]] =
-      InterpretersTo[F, Fx.Append[L, R]](le.coll ++ re.coll)
+      InterpretersTo[F, Fx.Append[L, R]](re.coll ++ le.coll)
   }
 
   trait ATM[Fx, A] {
